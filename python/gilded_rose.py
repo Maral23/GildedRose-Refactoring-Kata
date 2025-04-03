@@ -1,55 +1,58 @@
 # -*- coding: utf-8 -*-
 
-class GildedRose(object):
-
-    def __init__(self, items):
-        self.items = items
-
-    def update_quality(self):
-        for item in self.items:
-            self.update_sell_in(item)
-            self.update_item_quality(item)
-
-    def update_sell_in(self, item):
-        if item.name != "Sulfuras, Hand of Ragnaros": 
-            item.days_left -= 1
-
-
-    def update_item_quality(self,item):
-        if item.name == "Aged Brie":
-            self.update_aged_brie_quality(item)
-        elif item.name == "Backstage passes to a TAFKAL80ETC concert":
-            self.update_backstage_passes_quality(item)
-        elif item.name == "Sulfuras, Hand of Ragnaros":
-            pass
-        else:
-            self.update_normal_item_quality(item)
-
-    def update_normal_item_quality(self,item):
-        if item.quality >0:
-            item.quality -=1
-
-        if item.days_left < 0 and item.quality > 0:
-            item.quality -= 1
-
-    def update_aged_brie_quality(self, item):
+class AgedBrieStrategy: # brie strategy
+    def update_quality(self, item):
         if item.quality < 50:
             item.quality += 1
+        item.days_left -= 1
         if item.days_left < 0 and item.quality < 50:
             item.quality += 1
 
 
-    def update_backstage_passes_quality(self, item):
-        if item.days_left < 0:
+class SulfurasStrategy: # sulfuras strategy
+    def update_quality(self, item):
+        pass  #nothing changes
+
+
+class BackstagePassesStrategy:
+    def update_quality(self, item):
+        if item.days_left <= 0:  #occe the concert is over quality=0
             item.quality = 0
-        elif item.days_left < 5:
-            item.quality += 3
-        elif item.days_left < 10:
-            item.quality += 2
-        else:
-            item.quality += 1
-        if item.quality > 50:
-            item.quality = 50
+        elif item.days_left < 6:  # 5 days left =  quality x 3
+            if item.quality < 50:
+                item.quality += 3
+        elif item.days_left < 11:  # 10 days left =  quality x 2
+            if item.quality < 50:
+                item.quality += 2
+        else:  
+            if item.quality < 50:
+                item.quality += 1
+        item.days_left -= 1  
+
+
+class NormalItemStrategy: # any other item strategy
+    def update_quality(self, item):
+        if item.quality > 0:
+            item.quality -= 1
+        item.days_left -= 1
+        if item.days_left < 0 and item.quality > 0:
+            item.quality -= 1
+
+
+class GildedRose(object): # using strategies
+    def __init__(self, items):
+        self.items = items
+        self.strategies = {
+            "Aged Brie": AgedBrieStrategy(),
+            "Sulfuras, Hand of Ragnaros": SulfurasStrategy(),
+            "Backstage passes to a TAFKAL80ETC concert": BackstagePassesStrategy()
+        }
+
+    def update_quality(self):
+        for item in self.items:
+            strategy = self.strategies.get(item.name, NormalItemStrategy())
+            strategy.update_quality(item)
+
 
 
 class Item:
