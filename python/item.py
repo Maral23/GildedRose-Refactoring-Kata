@@ -11,7 +11,41 @@ class Item(ABC):
         pass
 
 
+class ItemBuilder:
+    """Builder pattern for creating items with optional decorators"""
+    def __init__(self, name, days_left, quality):
+        self.name = name
+        self.days_left = days_left
+        self.quality = quality
+        self.decorators = []
+
+    def with_decorator(self, decorator_name):
+        """Add a decorator to be applied during build()"""
+        self.decorators.append(decorator_name)
+        return self  # Enable method chaining
+
+    def build(self):
+        """Construct the final item with all decorators applied"""
+        # Create base item
+        if self.name == "Aged Brie":
+            item = AgedBrie(self.name, self.days_left, self.quality)
+        elif self.name == "Sulfuras, Hand of Ragnaros":
+            item = Sulfuras(self.name, self.days_left, self.quality)
+        elif self.name == "Backstage passes to a TAFKAL80ETC concert":
+            item = BackstagePasses(self.name, self.days_left, self.quality)
+        elif self.name == "Backstage passes to a GALA concert":
+            item = GalaBackstagePasses(self.name, self.days_left, self.quality)
+        else:
+            item = NormalItem(self.name, self.days_left, self.quality)
+
+        # Apply decorators in order
+        for decorator in self.decorators:
+            if decorator == "Conjured":
+                item = ConjuredItem(item)
+        return item
+
 class ConjuredItem(Item):
+    """Decorator that makes items degrade twice as fast"""
     def __init__(self, item):
         self.item = item
         self.name = f"Conjured {item.name}"
@@ -19,19 +53,16 @@ class ConjuredItem(Item):
         self.quality = item.quality
 
     def update_quality(self):
-        # First degradation (including expiry check)
-        self.item.update_quality()
-        
-        # Second degradation (force another quality decrease)
+        self.item.update_quality()  # First degradation
         if self.item.quality > 0:
             self.item.quality -= 1
-            # Additional decrease if expired
             if self.item.days_left < 0 and self.item.quality > 0:
                 self.item.quality -= 1
         
-        # Sync final state
+        # Sync state
         self.quality = self.item.quality
         self.days_left = self.item.days_left
+
 
 
 class AgedBrie(Item):
