@@ -41,7 +41,23 @@ class BackstagePasses(Item):
         self.days_left -= 1
 
 
-class NormalItem(Item):  # any other item strategy
+class GalaBackstagePasses(Item):
+    def update_quality(self):
+        if self.days_left <= 0:
+            self.quality = 0
+        elif self.days_left <= 5:
+            if self.quality < 50:
+                self.quality += 4
+        elif self.days_left <= 10:
+            if self.quality < 50:
+                self.quality += 3
+        elif self.days_left > 10:
+            if self.quality < 50:
+                self.quality += 2
+        self.days_left -= 1
+
+
+class NormalItem(Item): 
     def update_quality(self):
         if self.quality > 0:
             self.quality -= 1
