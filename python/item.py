@@ -11,6 +11,29 @@ class Item(ABC):
         pass
 
 
+class ConjuredItem(Item):
+    def __init__(self, item):
+        self.item = item
+        self.name = f"Conjured {item.name}"
+        self.days_left = item.days_left
+        self.quality = item.quality
+
+    def update_quality(self):
+        # First degradation (including expiry check)
+        self.item.update_quality()
+        
+        # Second degradation (force another quality decrease)
+        if self.item.quality > 0:
+            self.item.quality -= 1
+            # Additional decrease if expired
+            if self.item.days_left < 0 and self.item.quality > 0:
+                self.item.quality -= 1
+        
+        # Sync final state
+        self.quality = self.item.quality
+        self.days_left = self.item.days_left
+
+
 class AgedBrie(Item):
     def update_quality(self):
         if self.quality < 50:
@@ -22,7 +45,7 @@ class AgedBrie(Item):
 
 class Sulfuras(Item):
     def update_quality(self):
-        pass  # No change in quality or days_left
+        pass  # No change
 
 
 class BackstagePasses(Item):
@@ -57,7 +80,7 @@ class GalaBackstagePasses(Item):
         self.days_left -= 1
 
 
-class NormalItem(Item): 
+class NormalItem(Item):
     def update_quality(self):
         if self.quality > 0:
             self.quality -= 1

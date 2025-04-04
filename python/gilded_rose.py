@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
+from item import AgedBrie, Sulfuras, BackstagePasses, GalaBackstagePasses, NormalItem, ConjuredItem
 
-from item import AgedBrie, Sulfuras, BackstagePasses, NormalItem, GalaBackstagePasses
-
-class GildedRose(object):
+class GildedRose:
     def __init__(self, items):
         self.items = items
 
@@ -10,15 +8,19 @@ class GildedRose(object):
         for item in self.items:
             item.update_quality()
 
-    def create_item(self, name, days_left, quality): # Factory methid creates correct item type based on the item name
+    def create_item(self, name, days_left, quality):
+        item = None
         if name == "Aged Brie":
-            return AgedBrie(days_left, quality)
+            item = AgedBrie(name, days_left, quality)
         elif name == "Sulfuras, Hand of Ragnaros":
-            return Sulfuras(days_left, quality)
+            item = Sulfuras(name, days_left, quality)
         elif name == "Backstage passes to a TAFKAL80ETC concert":
-            return BackstagePasses(days_left, quality)
+            item = BackstagePasses(name, days_left, quality)
         elif name == "Backstage passes to a GALA concert":
-            return GalaBackstagePasses(days_left, quality)
+            item = GalaBackstagePasses(name, days_left, quality)
+        elif name.startswith("Conjured"): # since dont know which exactly item it is 
+            base_item = NormalItem(name.replace("Conjured ", ""), days_left, quality)
+            item = ConjuredItem(base_item)
         else:
-            return NormalItem(name, days_left, quality)
-
+            item = NormalItem(name, days_left, quality)
+        return item
